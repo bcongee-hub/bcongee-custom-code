@@ -1,0 +1,61 @@
+/**
+ * 步驟 1: 在後台商品編輯區 (一般分頁) 加入「特別說明」輸入框
+ */
+add_action( 'woocommerce_product_options_general_product_data', 'add_special_instruction_field' );
+function add_special_instruction_field() {
+    echo '<div class="options_group">';
+
+    woocommerce_wp_textarea_input( array(
+        'id'          => '_special_instruction', 
+        'label'       => __( '特別說明內容', 'woocommerce' ), 
+        'placeholder' => '請在此輸入該商品的特別說明 (支援 HTML)...',
+        'desc_tip'    => 'true',
+        'description' => '輸入內容將顯示在商品頁的「特別說明」分頁中。若留空則不顯示該分頁。',
+        'style'       => 'height: 150px;' // 讓格子高一點比較好打字
+    ));
+
+    echo '</div>';
+}
+
+/**
+ * 步驟 2: 儲存您輸入的資料
+ */
+add_action( 'woocommerce_process_product_meta', 'save_special_instruction_field' );
+function save_special_instruction_field( $post_id ) {
+    $custom_field_value = isset( $_POST['_special_instruction'] ) ? $_POST['_special_instruction'] : '';
+    // 允許 HTML 標籤 (wp_kses_post)
+    update_post_meta( $post_id, '_special_instruction', wp_kses_post( $custom_field_value ) );
+}
+
+/**
+ * 步驟 3: 在前台新增「特別說明」分頁
+ */
+add_filter( 'woocommerce_product_tabs', 'add_dynamic_special_tab', 25 ); // 順序設為 25，排在加熱說明前後
+function add_dynamic_special_tab( $tabs ) {
+    global $post;
+
+    // 檢查有沒有填寫內容，如果沒填寫，就不顯示這個分頁
+    $special_content = get_post_meta( $post->ID, '_special_instruction', true );
+    if ( empty( $special_content ) ) {
+        return $tabs;
+    }
+
+    $tabs['dynamic_special_tab'] = array(
+        'title'    => '特別說明',
+        'priority' => 15, // 數字越小越前面
+        'callback' => 'render_special_tab_content'
+    );
+
+    return $tabs;
+}
+
+/**
+ * 步驟 4: 輸出分頁內容
+ */
+function render_special_tab_content() {
+    global $post;
+    $content = get_post_meta( $post->ID, '_special_instruction', true );
+    
+    // 自動將換行符號轉成 <br>，讓排版正常
+    echo apply_filters( 'the_content', $content );
+}
