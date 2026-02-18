@@ -1,0 +1,41 @@
+add_action( 'wp_footer', function () { ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 找到所有 Rank Math FAQ 項目
+  var faqItems = document.querySelectorAll('.rank-math-list-item');
+  
+  if (faqItems.length === 0) return;
+  
+  // 預設展開第一個
+  if (faqItems[0]) {
+    faqItems[0].classList.add('faq-open');
+  }
+  
+  // 為每個問題加上點擊事件
+  faqItems.forEach(function(item) {
+    var question = item.querySelector('.rank-math-question');
+    
+    if (question) {
+      question.addEventListener('click', function() {
+        // 手風琴效果：關閉其他已開啟的
+        faqItems.forEach(function(otherItem) {
+          if (otherItem !== item) {
+            otherItem.classList.remove('faq-open');
+          }
+        });
+        
+        // 切換當前項目
+        item.classList.toggle('faq-open');
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* 記得補上 CSS 讓開闔效果生效 */
+.rank-math-list-item .rank-math-answer { display: none; }
+.rank-math-list-item.faq-open .rank-math-answer { display: block; }
+.rank-math-question { cursor: pointer; }
+</style>
+<?php }, 100 );
