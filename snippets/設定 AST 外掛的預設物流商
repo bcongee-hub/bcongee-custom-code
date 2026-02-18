@@ -1,0 +1,47 @@
+/**
+ * 益粥專用：AST 物流外掛自動選擇第一個供應商 (黑貓)
+ * 解決每次都要手動選 T-Cat 的問題
+ */
+add_action('admin_footer', 'bcongee_auto_select_first_provider');
+
+function bcongee_auto_select_first_provider() {
+    // 只在訂單頁面執行，避免影響其他地方
+    global $pagenow;
+    if ( 'post.php' !== $pagenow && 'edit.php' !== $pagenow ) {
+        return;
+    }
+
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($){
+        // 監聽：當管理者按下網頁上任何東西時
+        $(document).on('click', function(e){
+            // 如果按下的是 "Add Tracking Info" 按鈕 (包含 AST 的各種按鈕 class)
+            if( $(e.target).closest('.add-tracking-number, .ast-add-tracking, .button-primary').length ) {
+                
+                // 給視窗一點時間彈出來 (0.5秒)
+                setTimeout(function(){
+                    // 1. 找到那個該死的下拉選單
+                    var $providerSelect = $('select[name="tracking_provider"]');
+                    
+                    // 2. 如果選單出現了，而且還沒有選任何東西
+                    if( $providerSelect.length > 0 && !$providerSelect.val() ) {
+                        
+                        // 3. 抓取選單裡的「第二個選項」 
+                        // (為什麼是第二個？因為第一個通常是 "Select Provider..." 請選擇)
+                        var targetVal = $providerSelect.find('option').eq(1).val();
+                        
+                        // 4. 如果有抓到值，就幫老闆選下去！
+                        if(targetVal) {
+                            $providerSelect.val(targetVal).trigger('change');
+                            // 下面這行是為了觸發 AST 的內部更新，確保它知道我們選了
+                            $providerSelect.trigger('select2:select'); 
+                        }
+                    }
+                }, 500); // 這裡的 500 是延遲 0.5 秒，如果視窗跑很慢可以改成 1000
+            }
+        });
+    });
+    </script>
+    <?php
+}
