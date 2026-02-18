@@ -1,0 +1,27 @@
+/**
+ * 優化 WooCommerce 商品簡短說明列表間距 (Hank 專用)
+ */
+add_action( 'wp_head', 'hank_fix_product_short_description_css' );
+
+function hank_fix_product_short_description_css() {
+    // 判斷：只在「單一商品頁」執行，避免影響首頁或其他頁面
+    if ( is_product() ) {
+        ?>
+        <style>
+            /* 針對簡短說明區塊的列表 (ul) 進行修正 */
+            .woocommerce-product-details__short-description ul {
+                margin-top: 5px !important;    /* 列表頂部貼齊 */
+                padding-left: 20px !important; /* 左側縮排 */
+                margin-bottom: 15px !important;
+            }
+
+            /* 針對每一行項目 (li) 進行修正 */
+            .woocommerce-product-details__short-description ul li {
+                margin-bottom: 6px !important; /* 行距縮小，讓資訊更緊湊 */
+                line-height: 1.5 !important;   /* 行高適中 */
+                list-style-type: disc !important; /* 確保圓點顯示 */
+            }
+        </style>
+        <?php
+    }
+}
