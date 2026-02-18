@@ -1,0 +1,5 @@
+add_filter( 'woocommerce_product_tabs', 'kacter_remove_product_tabs', 9999 );
+function kacter_remove_product_tabs( $tabs ) {
+    unset( $tabs['additional_information'] );
+    return $tabs;
+}
