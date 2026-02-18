@@ -1,0 +1,114 @@
+
+/**
+ * 益粥全自動目錄 V4.6 - 極簡英文 ID 版
+ * 特點：改用 #bc-1, #bc-2 序號，解決中文網址複製後變亂碼的問題
+ */
+
+// 1. 【PHP】為 H2 加上極簡序號 ID
+add_filter( 'the_content', 'bcongee_auto_header_ids_v4_6', 1 ); 
+function bcongee_auto_header_ids_v4_6( $content ) {
+    if ( ! is_singular( array( 'post', 'product' ) ) ) return $content;
+
+    $count = 0;
+    // 匹配 h2 標籤
+    return preg_replace_callback( '/<(h2)([^>]*)>(.*?)<\/\1>/i', function( $matches ) use (&$count) {
+        $tag = $matches[1];
+        $attrs = $matches[2];
+        $text = $matches[3];
+        
+        $count++;
+        $id = 'bc-' . $count; // 產生 bc-1, bc-2...
+        
+        // 如果原本已經有 id 屬性，我們還是強制覆蓋為極簡 ID，確保分享時一致
+        $attrs = preg_replace('/id=["\'](.*?)["\']/', '', $attrs);
+        
+        return "<{$tag}{$attrs} id=\"{$id}\">{$text}</{$tag}>";
+    }, $content );
+}
+
+// 2. 【PHP + JS】頁尾生成目錄
+add_action( 'wp_footer', 'bcongee_toc_final_package_v4_6' );
+function bcongee_toc_final_package_v4_6() {
+    if ( ! is_singular( array( 'post', 'product' ) ) ) return;
+    ?>
+    <style>
+        #bcongee-toc {
+            background-color: #fffdf2;
+            border: 2px solid #f9e8a5;
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin: 35px 0;
+            box-shadow: 0 4px 15px rgba(220, 180, 50, 0.08);
+        }
+        #bcongee-toc .toc-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #8a6d3b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f1e0a1;
+            padding-bottom: 12px;
+        }
+        #bcongee-toc .toc-title::before { content: "📋"; margin-right: 12px; }
+        #bcongee-toc ul { list-style: none; padding: 0; margin: 0; }
+        #bcongee-toc li { margin-bottom: 15px; line-height: 1.6; }
+        #bcongee-toc a { 
+            color: #5d4037; 
+            text-decoration: none; 
+            transition: all 0.3s ease; 
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        #bcongee-toc a:hover { color: #d35400; transform: translateX(8px); }
+        @media (max-width: 768px) {
+            #bcongee-toc { padding: 20px; }
+            #bcongee-toc a { font-size: 1rem; }
+        }
+    </style>
+
+    <script type="text/javascript">
+    (function($) {
+        $(document).ready(function() {
+            // 選取所有有效標題
+            var $headers = $('.entry-content').find('h2, .uagb-heading-text').filter(function() {
+                var $this = $(this);
+                var text = $this.text().trim();
+                if ($this.closest('.wpbr-review, .wpbr-testimonial, .wp-business-reviews, .wpbr-item, .uagb-testimonial, .comments-area, #reviews').length > 0) return false;
+                if ($this.prop("tagName") !== 'H2' && !$this.hasClass('uagb-heading-text')) return false;
+                if (text.length <= 3 || text.length > 40 || text.includes("★")) return false;
+                return true;
+            });
+
+            if ($headers.length < 2) return;
+
+            var tocHtml = '<div id="bcongee-toc"><span class="toc-title">文章重點摘要：</span><ul>';
+            $headers.each(function(index) {
+                var $h = $(this);
+                var text = $h.text().trim();
+                var id = 'bc-' + (index + 1); // 確保 JS 的 ID 跟 PHP 同步
+                $h.attr('id', id);
+                tocHtml += '<li class="toc-h2"><a href="#' + id + '">' + text + '</a></li>';
+            });
+            tocHtml += '</ul></div>';
+
+            if ($headers.first().length > 0) {
+                $(tocHtml).insertBefore($headers.first());
+            }
+
+            $(document).on('click', '#bcongee-toc a', function(e) {
+                var hash = this.hash;
+                if (hash && $(hash).length) {
+                    e.preventDefault();
+                    $('html, body').animate({
+                        scrollTop: $(hash).offset().top - 140
+                    }, 600);
+                    history.pushState(null, null, hash);
+                }
+            });
+        });
+    })(jQuery);
+    </script>
+    <?php
+}
