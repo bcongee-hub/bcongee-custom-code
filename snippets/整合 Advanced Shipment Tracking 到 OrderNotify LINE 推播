@@ -1,0 +1,50 @@
+
+/**
+ * 整合 Advanced Shipment Tracking 到 OrderNotify LINE 推播
+ * 版本:單一追蹤號碼專用
+ * 
+ * 可用參數:
+ * {{tracking_number}} - 追蹤號碼
+ * {{tracking_provider}} - 物流商名稱
+ * {{tracking_url}} - 追蹤連結
+ * {{tracking_date}} - 出貨日期
+ */
+
+add_filter( 'wc_notify_replace_params', 'ast_ordernotify_integration_single', 10, 2 );
+
+function ast_ordernotify_integration_single( $replaces, $order ) {
+    
+    // 檢查 Advanced Shipment Tracking 外掛是否存在
+    if ( ! function_exists( 'ast_get_tracking_items' ) ) {
+        return $replaces;
+    }
+    
+    // 取得訂單 ID
+    $order_id = $order->get_id();
+    
+    // 取得追蹤資訊
+    $tracking_items = ast_get_tracking_items( $order_id );
+    
+    // 如果沒有追蹤資訊,設定為空值
+    if ( empty( $tracking_items ) ) {
+        $replaces['{{tracking_number}}'] = '尚未提供';
+        $replaces['{{tracking_provider}}'] = '尚未提供';
+        $replaces['{{tracking_url}}'] = '';
+        $replaces['{{tracking_date}}'] = '尚未出貨';
+        return $replaces;
+    }
+    
+    // 取得第一筆追蹤資訊
+    $tracking = $tracking_items[0];
+    
+    // 設定追蹤參數
+    $replaces['{{tracking_number}}'] = $tracking['tracking_number'];
+    $replaces['{{tracking_provider}}'] = $tracking['formatted_tracking_provider'];
+    $replaces['{{tracking_url}}'] = $tracking['formatted_tracking_link'];
+    $replaces['{{tracking_date}}'] = date_i18n( 
+        'Y/m/d', 
+        $tracking['date_shipped'] 
+    );
+    
+    return $replaces;
+}
