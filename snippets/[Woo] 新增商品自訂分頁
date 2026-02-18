@@ -1,0 +1,37 @@
+add_filter( 'woocommerce_product_tabs', 'add_global_custom_tabs' );
+function add_global_custom_tabs( $tabs ) {
+
+    // --- 第一個分頁：加熱說明 ---
+    $tabs['heating_tab'] = array(
+        'title'    => '加熱說明',
+        'priority' => 20,
+        'callback' => 'content_heating_tab'
+    );
+
+    // --- 第二個分頁：配送與付款方式 ---
+    $tabs['shipping_tab'] = array(
+        'title'    => '配送與付款方式',
+        'priority' => 30,
+        'callback' => 'content_shipping_tab'
+    );
+
+    return $tabs;
+}
+
+// --- 以下是負責抓取內容的功能 ---
+
+// 1. 輸出「加熱說明」的內容
+function content_heating_tab() {
+    // ★ 請記得把下面 2222 改成您「[功能頁] 加熱說明」的真實 ID
+    $post_id = 51666; 
+    $post = get_post($post_id);
+    if ($post) echo apply_filters('the_content', $post->post_content);
+}
+
+// 2. 輸出「配送與付款」的內容
+function content_shipping_tab() {
+    // ★ 請記得把下面 3333 改成您「[功能頁] 配送與付款」的真實 ID
+    $post_id = 51671; 
+    $post = get_post($post_id);
+    if ($post) echo apply_filters('the_content', $post->post_content);
+}
