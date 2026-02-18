@@ -1,0 +1,45 @@
+/**
+ * 自動為部落格文章內容中的圖片補上 Missing Width & Height 屬性
+ * 以優化 CLS 跑分
+ */
+add_filter('the_content', 'add_image_dimensions_to_content', 10);
+
+function add_image_dimensions_to_content($content) {
+    if (is_null($content)) return $content;
+
+    // 使用正規表達式搜尋內容中的 img 標籤
+    $content = preg_replace_callback('/<img[^>]+>/i', function($matches) {
+        $img_html = $matches[0];
+
+        // 如果已經有 width 和 height 了，就跳過不處理
+        if (strpos($img_html, 'width=') !== false && strpos($img_html, 'height=') !== false) {
+            return $img_html;
+        }
+
+        // 取得圖片的原始來源路徑 (src)
+        if (preg_match('/src=["\']([^"\']+)["\']/i', $img_html, $src_matches)) {
+            $img_url = $src_matches[1];
+            
+            // 嘗試解析圖片尺寸
+            // 註：這會耗費一點初次載入資源，但 LiteSpeed 會將結果緩存起來，所以不用擔心效能
+            $image_data = @getimagesize($img_url);
+            
+            if ($image_data) {
+                $width = $image_data[0];
+                $height = $image_data[1];
+                
+                // 如果 HTML 裡沒寫寬度，就補上
+                if (strpos($img_html, 'width=') === false) {
+                    $img_html = str_replace('<img', '<img width="' . $width . '"', $img_html);
+                }
+                // 如果 HTML 裡沒寫高度，就補上
+                if (strpos($img_html, 'height=') === false) {
+                    $img_html = str_replace('<img', '<img height="' . $height . '"', $img_html);
+                }
+            }
+        }
+        return $img_html;
+    }, $content);
+
+    return $content;
+}
