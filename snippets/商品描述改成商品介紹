@@ -1,0 +1,5 @@
+// 變更『商品描述』標籤名稱
+add_filter( 'woocommerce_product_description_tab_title', 'dh_rename_description_product_tab_label' );
+function dh_rename_description_product_tab_label() {
+	return '商品介紹';
+}
