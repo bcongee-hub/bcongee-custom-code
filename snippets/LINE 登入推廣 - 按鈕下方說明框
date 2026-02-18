@@ -1,0 +1,134 @@
+/**
+ * 在結帳頁 LINE 登入按鈕下方加入說明框
+ * 使用 JavaScript 動態插入
+ * 版本 2.4 - 手機版字體再加大，與第一個提示框統一
+ */
+
+add_action( 'wp_footer', 'bcongee_line_login_benefits_box' );
+
+function bcongee_line_login_benefits_box() {
+    
+    // 只在結帳頁面執行
+    if ( ! is_checkout() ) {
+        return;
+    }
+    
+    // 如果已登入就不顯示
+    if ( is_user_logged_in() ) {
+        return;
+    }
+    
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        
+        // 延遲執行，確保 DOM 完全載入
+        setTimeout(function() {
+            
+            // 尋找綠色 LINE 登入按鈕
+            var lineButton = $(
+                '.line-login-btn, ' +
+                'a[class*="line"], ' +
+                'button[class*="line"], ' +
+                'a:contains("登入")[href*="line"], ' +
+                '.woocommerce-form-login-toggle + a, ' +
+                'a[style*="background"][style*="00B900"]'
+            ).filter(function() {
+                var text = $(this).text().toLowerCase();
+                var href = $(this).attr('href') || '';
+                return $(this).is(':visible') && 
+                       (text.includes('line') || 
+                        text.includes('登入') || 
+                        href.includes('line'));
+            }).first();
+            
+            // 如果找到按鈕，且還沒加過說明框
+            if (lineButton.length > 0 && lineButton.next('.bcongee-line-benefits-box').length === 0) {
+                
+                // 建立說明框 HTML
+                var benefitsBox = `
+                    <div class="bcongee-line-benefits-box">
+                        <div class="bcongee-benefits-title">
+                            ⚡ 一鍵完成，超級簡單
+                        </div>
+                        
+                        <div class="bcongee-benefits-content">
+                            <div class="benefit-text">只要點擊上方綠色按鈕，同意授權即可！</div>
+                            <div class="benefit-text">之後所有訂單通知都會自動推播到您的 LINE</div>
+                            <div class="benefit-text">完全不需要另外設定，非常方便 😊</div>
+                        </div>
+                    </div>
+                `;
+                
+                // 在按鈕後面插入說明框
+                lineButton.after(benefitsBox);
+            }
+            
+        }, 500);
+        
+    });
+    </script>
+    
+    <style>
+    /* 說明框容器 */
+    .bcongee-line-benefits-box {
+        margin: 15px 0 20px 0;
+        padding: 16px 18px;
+        background: #F8F9FA;
+        border-radius: 8px;
+        border: 1px solid #E0E0E0;
+        text-align: center;
+    }
+    
+    /* 標題 - 桌面版 */
+    .bcongee-benefits-title {
+        color: #27AE60;
+        font-weight: bold;
+        margin-bottom: 12px;
+        font-size: 17px; /* 加大！ */
+    }
+    
+    /* 內容容器 */
+    .bcongee-benefits-content {
+        text-align: left;
+    }
+    
+    /* 每一行文字 - 桌面版 */
+    .benefit-text {
+        font-size: 16px; /* 加大！ */
+        color: #333; /* 深色 */
+        font-weight: 500; /* 稍微加粗 */
+        line-height: 1.7;
+        margin-bottom: 8px;
+    }
+    
+    .benefit-text:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* 手機版優化 - 重點！字體再加大 */
+    @media (max-width: 768px) {
+        .bcongee-line-benefits-box {
+            margin: 12px 0 18px 0 !important;
+            padding: 14px 16px !important;
+        }
+        
+        /* 標題大幅加大 - 與第一個提示框統一 */
+        .bcongee-benefits-title {
+            font-size: 19px !important; /* 再加大！原本 17px */
+            margin-bottom: 10px !important;
+            font-weight: bold !important;
+        }
+        
+        /* 內容文字大幅加大 - 與第一個提示框統一 */
+        .benefit-text {
+            font-size: 16px !important; /* 保持 16px，與上方提示框一致 */
+            line-height: 1.6 !important;
+            margin-bottom: 6px !important;
+            color: #1f2d3d !important; /* 更深色 */
+            font-weight: 600 !important; /* 更粗 */
+        }
+    }
+    </style>
+    <?php
+}
