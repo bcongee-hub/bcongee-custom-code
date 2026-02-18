@@ -1,0 +1,93 @@
+<script>
+
+var _contactDefImage = 'https://bcongee.com/wp-content/uploads/81996c2659ce4d762fad3aa53c378bfda0f9cd45-e1678277989337.png';
+var _contactButtons = [];
+
+_contactButtons[0] = {};
+_contactButtons[0].id = 'floatLineButton';
+_contactButtons[0].link = 'https://m.me/bcongee';
+_contactButtons[0].imageUrl = 'https://bcongee.com/wp-content/uploads/messenger-logo-150x150-1-e1678278694601.png';
+
+_contactButtons[1] = {};
+_contactButtons[1].id = 'floatFBButton';
+_contactButtons[1].link = 'https://line.me/ti/p/@zgc6755h';
+_contactButtons[1].imageUrl = 'https://bcongee.com/wp-content/uploads/line-e1678278528582.png';
+
+function _addFloatContact() {
+        var floatIconContainer = document.createElement('div');
+        floatIconContainer.setAttribute('id', '__floatChatIcons');
+        for (_i = _contactButtons.length-1; _i >=0 ; _i--) {
+            if (_contactButtons[_i].link.replace(/ /ig, '') != '') {
+                var _chaticon = document.createElement('a');
+                _chaticon.setAttribute('id',_contactButtons[_i].id);
+                _chaticon.setAttribute('href',_contactButtons[_i].link);
+                _chaticon.setAttribute('target','_blank');
+                _chaticon.setAttribute('class','chatIconHide');
+                _chaticon.setAttribute('data-type','childButton');
+                _chaticon.setAttribute('data-item-show','0');
+
+                _chaticon.innerHTML='<img src="' + _contactButtons[_i].imageUrl + '" width="60" height="60"/>';
+                floatIconContainer.appendChild(_chaticon);
+            }
+        }
+
+        var _floatChaticon = document.createElement('a');
+        _floatChaticon.setAttribute('id','fixedChatbuttons');
+        _floatChaticon.setAttribute('href','javascript:void(0);');
+        _floatChaticon.setAttribute('data-item-show','0');
+        _floatChaticon.innerHTML='<img src="' + _contactDefImage + '" width="60" height="60"/></a>';
+
+        floatIconContainer.appendChild(_floatChaticon);
+        _floatChaticon.addEventListener('click',function(){
+ 
+       var _ncs=document.querySelectorAll("[data-type='childButton']");
+
+       if (this.getAttribute('data-item-show') == '1') {
+                for(_j=0;_j<_ncs.length;_j++){
+                    _ncs[_j].classList.remove('chatIconShow');
+                }
+
+                this.classList.remove('chatIconShow');
+                this.setAttribute('data-item-show', '0');
+            } else {
+                for(_j=0;_j<_ncs.length;_j++){
+                    _ncs[_j].classList.add('chatIconShow');
+                }
+
+                this.classList.add('chatIconShow');
+                this.setAttribute('data-item-show', '1');
+            }
+        });
+
+        document.querySelector("body").appendChild(floatIconContainer);
+    }
+
+    setTimeout(function () {
+        _addFloatContact();
+
+    }, 1000);
+
+</script>
+
+<style>
+
+    #__floatChatIcons {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 10000;
+    }
+
+    #__floatChatIcons>a {
+        margin-top: 10px;
+    }
+
+    .chatIconHide {
+        display: none;
+    }
+
+    .chatIconShow {
+        display: block !important;
+    }
+
+</style>
