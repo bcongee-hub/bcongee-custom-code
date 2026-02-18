@@ -1,0 +1,26 @@
+/**
+ * 益粥網站優化：自訂「我的帳號」選單與導向邏輯
+ * 1. 隱藏「控制台」與「下載」選單
+ * 2. 登入後或點擊「我的帳號」自動跳轉至「訂單」頁面
+ */
+
+// --- 1. 隱藏選單欄位 ---
+add_filter( 'woocommerce_account_menu_items', 'yizhou_remove_account_menu_items', 999 );
+function yizhou_remove_account_menu_items( $items ) {
+    // 隱藏「控制台」 (Dashboard)
+    unset( $items['dashboard'] );
+    // 隱藏「下載」 (Downloads)
+    unset( $items['downloads'] );
+    
+    return $items;
+}
+
+// --- 2. 讓「我的帳號」首頁直接進入「訂單」 ---
+add_action( 'template_redirect', 'yizhou_redirect_account_dashboard_to_orders' );
+function yizhou_redirect_account_dashboard_to_orders() {
+    // 判斷是否在「我的帳號」頁面，且沒有其他子分頁路徑（即首頁/控制台）
+    if ( is_account_page() && is_user_logged_in() && empty( WC()->query->get_current_endpoint() ) ) {
+        wp_safe_redirect( wc_get_endpoint_url( 'orders' ) );
+        exit;
+    }
+}
